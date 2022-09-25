@@ -2,6 +2,7 @@ const inquirer = require('inquirer');
 const ct = require('console.table');
 const db = require('./db/connection');
 
+
 db.connect((err) => {
     if(err) {
         throw err
@@ -98,7 +99,87 @@ const viewEmployees = () => {
                })
 };
 
+const addDepartment = () => {
+    inquirer.prompt([
+        {
+            type: 'input',
+            name: 'deptInput',
+            message: 'Enter name of the department:',
+            validate: deptInput => {
+                if (deptInput) {
+                    return true;
+                } else {
+                    console.log('Please enter the department name.');
+                    return false;
+                }
+            }
+        }
+    ])
+    .then((input) => {
+        db.query(`INSERT INTO department (name) VALUES (?)`, [input.deptInput], (err,res) => {
+            if(err) throw err;
+            console.log('\nNew Department Added!\n');
+            menu();
+        })
+    })
+};
 
 
+const addRole = () => {
+//to get choices for Departments
+    const getDept = `SELECT department.name FROM department`;
+    db.query(getDept, (err, res) => {
+        if(err) throw err;
+        const deptChoices = res.map(({name}) => (`${name}`));
 
+    inquirer.prompt([
+        {
+            type: 'input',
+            name: 'roleInput',
+            message: 'What role would you like to add?',
+            validate: roleInput => {
+                if (roleInput) {
+                    return true;
+                } else {
+                    console.log('Please enter a role.');
+                    return false;
+                }
+            }
+        },
+        {
+            type: 'input',
+            name: 'salaryInput',
+            message: 'Enter the salary amount for the new role.',
+            validate: salaryInput => {
+                if (!NaN) {
+                    return true;
+                }else {
+                    console.log('Please enter a salary amount.');
+                    return false;
+                }
+            }
+        },
+        {
+            type: 'list',
+            name: 'deptChoice',
+            message: 'Select the department for this role:',
+            choices: deptChoices
+        }
+    ])
+    })
+    .then((input) => {
+// to get department id to use for role
+        const dep =`SELECT department.id FROM department WHERE department.name = ?`;
+        db.query(dep, [input.dept], (err, res) => {
+           if (err) throw err;
+           const deptId = res[0].id;
+        
+        db.query('INSERT INTO roles (title, salary, department_id) VALUES (?, ?, ?)', [input.roles_title, input.roles_salary, deptID], 
+        (err, res) => {
+            if(err) throw err;
+            console.log('\nNew Role Added!\n');
+            menu();
+        })         
+    })
+})}
 
