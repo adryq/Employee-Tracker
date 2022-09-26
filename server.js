@@ -1,7 +1,15 @@
+const express = require('express');
 const inquirer = require('inquirer');
 const ct = require('console.table');
 const db = require('./db/connection');
+const res = require('express/lib/response');
 
+const PORT = process.env.PORT || 3001;
+const app = express();
+
+// Express middleware
+app.use(express.urlencoded({ extended: false }));
+app.use(express.json());
 
 db.connect((err) => {
     if(err) {
@@ -174,12 +182,103 @@ const addRole = () => {
            if (err) throw err;
            const deptId = res[0].id;
         
-        db.query('INSERT INTO roles (title, salary, department_id) VALUES (?, ?, ?)', [input.roles_title, input.roles_salary, deptID], 
-        (err, res) => {
+        const insert = `INSERT INTO roles (title, salary, department_id) VALUES (?, ?, ?)`;  
+        const params = [input.roles_title, input.roles_salary, deptID];
+
+        db.query(insert, params, (err, res) => {
             if(err) throw err;
             console.log('\nNew Role Added!\n');
             menu();
         })         
     })
-})}
+})};
 
+// const addEmployee = () => {
+//     const roleQuery = `SELECT roles.title FROM Roles`;
+//     db.query(roleQuery, (err, res) => {
+//         if(err) throw err;
+//         const roleChoices = res.map(({title}) => (`${title}`));
+// })
+//     inquirer.prompt([
+//         {
+//             type: 'input',
+//             name: 'first_name',
+//             message: 'Enter new employees first name:'
+//         },
+//         {
+//             type: 'input',
+//             name: 'last_name',
+//             message: 'Enter new employees last name:'
+//         },
+//         {
+//             type: 'list',
+//             name: 'role',
+//             message: 'Enter new employees role:',
+//             choices: roleChoices,
+//         },
+//     ])
+//     .then((anser) => {
+//         db.query(`INSERT INTO Employees SET ?`)
+//         console.log(
+//             'Added' + anser.first_name + '' + anser.last_name + 'to our employees'
+//         );
+//         menu()
+
+       
+//     })
+// }
+
+// const updateEmployee = () => {
+//     const employeeQuery = `SELECT employee.first_name FROM employee`;
+//     db.query(employeeQuery, (err, res) => {
+//         if(err) throw err;
+//         const employeeChoices = res.map(({first_name}) => (`${first_name}`));
+//     })
+//     inquirer.prompt([
+//         {
+//             type: 'list',
+//             name: 'choice',
+//             message: 'Please select an employee to update',
+//             choices: employeeChoices
+//         }
+//     ])
+//     .then((response) => {
+//         const saveName = response.choice;
+//         db.query('SELECT * FROM employee', (err, results) => {
+//             if(err) throw err;
+
+//             inquirer.prompt([
+//                 {
+//                     type: 'list',
+//                     name: 'role',
+//                     message: 'Select title',
+//                     choices: function () {
+//                         choiceArr = [];
+//                         for (i = 0; i < results.length; i++){
+//                             choiceArr.push(results[i].roles_id)
+//                         }
+//                         return choiceArr;
+//                     }
+//                 },
+//                 {
+//                     type: 'number',
+//                     name: 'manager',
+                    
+//                 },
+//             ])
+//             .then((answer) => {
+//                 console.log(answer);
+//                 console.log(saveName);
+//                 db.query('UPDATE employees SET ? WHERE first_name = ?', [
+//                     {
+//                         roles_id: answer.role,
+//                         manager_id: answer.manager,
+//                     },
+//                     saveName()
+//                 ]),
+//                 console.log('Employee Updated');
+//                 menu()
+//             })
+//         })
+//     })
+// }
